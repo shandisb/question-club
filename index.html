@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Question Club</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a1a1a">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Epilogue:wght@400;500;700&display=swap');
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --ink: #1a1a1a;
+      --paper: #e8f4f8;
+      --accent: #d4695b;
+      --muted: #7a7a7a;
+      --highlight: #f0f8ff;
+    }
+    
+    body {
+      font-family: 'Epilogue', sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+    
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.01) 2px, rgba(0,0,0,0.01) 4px),
+        radial-gradient(circle at 20% 80%, rgba(212, 105, 91, 0.03) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    header {
+      padding: 60px 0;
+      text-align: center;
+      position: relative;
+    }
+    
+    .logo-container {
+      position: relative;
+      display: inline-block;
+    }
+    
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3rem, 8vw, 5.5rem);
+      font-weight: 900;
+      color: var(--ink);
+      letter-spacing: -0.03em;
+      line-height: 0.9;
+      position: relative;
+      display: inline-block;
+    }
+    
+    .tagline {
+      font-size: 1rem;
+      color: var(--muted);
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-top: 20px;
+      position: relative;
+    }
+    
+    .tagline::before,
+    .tagline::after {
+      content: '•';
+      margin: 0 16px;
+      color: var(--accent);
+    }
+    
+    .mode-toggle {
+      display: flex;
+      gap: 0;
+      justify-content: center;
+      margin-bottom: 60px;
+      background: white;
+      border-radius: 50px;
+      padding: 6px;
+      box-shadow: 0 2px 20px rgba(0, 0, 0, 0.06);
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    
+    .mode-btn {
+      flex: 1;
+      padding: 16px 32px;
+      background: transparent;
+      border: none;
+      border-radius: 50px;
+      font-family: 'Epilogue', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      color: var(--muted);
+      letter-spacing: 0.02em;
+    }
+    
+    .mode-btn.active {
+      background: var(--ink);
+      color: white;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .view {
+      display: none;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    .view.active {
+      display: block;
+    }
+    
+    .card {
+      background: white;
+      border-radius: 24px;
+      padding: 50px;
+      box-shadow: 
+        0 1px 3px rgba(0, 0, 0, 0.02),
+        0 8px 24px rgba(0, 0, 0, 0.04);
+      margin-bottom: 30px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+    
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, var(--accent) 0%, #e89b8f 100%);
+    }
+    
+    .question-display {
+      background: linear-gradient(135deg, var(--highlight) 0%, #ffffff 100%);
+      padding: 50px;
+      border-radius: 20px;
+      margin-bottom: 40px;
+      position: relative;
+      border: 2px solid #f5e6d3;
+    }
+    
+    .question-display::before {
+      content: '"';
+      position: absolute;
+      top: 20px;
+      left: 30px;
+      font-family: 'Playfair Display', serif;
+      font-size: 120px;
+      font-weight: 900;
+      color: rgba(212, 105, 91, 0.08);
+      line-height: 1;
+    }
+    
+    .question-text {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.4;
+      position: relative;
+      z-index: 1;
+      margin-bottom: 20px;
+    }
+    
+    .question-date {
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 30px;
+      color: var(--ink);
+      position: relative;
+      display: inline-block;
+    }
+    
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: -8px;
+      left: 0;
+      width: 60px;
+      height: 3px;
+      background: var(--accent);
+    }
+    
+    .form-group {
+      margin-bottom: 30px;
+    }
+    
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--ink);
+      font-size: 0.9rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    
+    input[type="text"],
+    textarea {
+      width: 100%;
+      padding: 18px 24px;
+      border: 2px solid #e8e8e8;
+      border-radius: 16px;
+      font-family: 'Epilogue', sans-serif;
+      font-size: 1rem;
+      background: #fafafa;
+      transition: all 0.3s ease;
+      color: var(--ink);
+    }
+    
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: white;
+      box-shadow: 0 0 0 4px rgba(212, 105, 91, 0.08);
+    }
+    
+    textarea {
+      min-height: 140px;
+      resize: vertical;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem;
+      line-height: 1.7;
+    }
+    
+    .btn {
+      padding: 18px 40px;
+      border: none;
+      border-radius: 50px;
+      font-family: 'Epilogue', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+    
+    .btn:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent) 0%, #c25a4d 100%);
+      color: white;
+      box-shadow: 0 4px 16px rgba(212, 105, 91, 0.25);
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(212, 105, 91, 0.35);
+    }
+    
+    .btn-secondary {
+      background: var(--ink);
+      color: white;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    }
+    
+    .btn-secondary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+    
+    .answer-item {
+      background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+      padding: 30px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      border-left: 4px solid var(--accent);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    
+    .answer-item:hover {
+      transform: translateX(4px);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    }
+    
+    .answer-author {
+      font-weight: 700;
+      color: var(--ink);
+      margin-bottom: 12px;
+      font-size: 1.05rem;
+      letter-spacing: 0.02em;
+    }
+    
+    .answer-text {
+      color: var(--ink);
+      line-height: 1.7;
+      font-size: 1.05rem;
+      margin-bottom: 12px;
+    }
+    
+    .answer-time {
+      font-size: 0.8rem;
+      color: var(--muted);
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+      color: var(--muted);
+    }
+    
+    .empty-state-icon {
+      font-size: 5rem;
+      margin-bottom: 24px;
+      opacity: 0.2;
+      filter: grayscale(1);
+    }
+    
+    .empty-state p {
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+    
+    .alert {
+      padding: 20px 28px;
+      border-radius: 16px;
+      margin-bottom: 24px;
+      font-weight: 500;
+      animation: slideDown 0.4s ease;
+    }
+    
+    .alert-success {
+      background: linear-gradient(135deg, #e8f5e9 0%, #f1f8f4 100%);
+      border: 2px solid #81c784;
+      color: #2e7d32;
+    }
+    
+    .alert-info {
+      background: linear-gradient(135deg, var(--highlight) 0%, #ffffff 100%);
+      border: 2px solid var(--accent);
+      color: #a84d42;
+    }
+    
+    .share-section {
+      background: linear-gradient(135deg, #f5f5f5 0%, #fafafa 100%);
+      padding: 35px;
+      border-radius: 20px;
+      margin-top: 30px;
+      border: 2px dashed #d0d0d0;
+    }
+    
+    .share-section h3 {
+      font-family: 'Playfair Display', serif;
+      margin-bottom: 16px;
+      color: var(--ink);
+      font-size: 1.4rem;
+    }
+    
+    .share-link {
+      background: white;
+      padding: 16px 20px;
+      border-radius: 12px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      word-break: break-all;
+      margin: 16px 0;
+      border: 2px solid #e0e0e0;
+      color: var(--accent);
+      font-weight: 600;
+    }
+    
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+    
+    .stat-card {
+      background: linear-gradient(135deg, var(--ink) 0%, #2a2a2a 100%);
+      border-radius: 20px;
+      padding: 32px 24px;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent) 0%, #e89b8f 100%);
+    }
+    
+    .stat-number {
+      font-family: 'Playfair Display', serif;
+      font-size: 3.5rem;
+      font-weight: 900;
+      color: white;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    
+    .stat-label {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.7);
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      font-weight: 700;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @media (max-width: 768px) {
+    
+    .checkbox-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      background: #f5f5f5;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .checkbox-wrapper:hover {
+      background: #ececec;
+    }
+    
+    .checkbox-wrapper input[type="checkbox"] {
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+      accent-color: var(--accent);
+    }
+    
+    .checkbox-wrapper label {
+      margin: 0;
+      font-weight: 500;
+      text-transform: none;
+      letter-spacing: normal;
+      cursor: pointer;
+      font-size: 1rem;
+      color: var(--ink);
+    }
+    
+    .anonymous-badge {
+      display: inline-block;
+      background: var(--muted);
+      color: white;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-left: 8px;
+    }
+      .card { padding: 30px 24px; }
+      .question-display { padding: 30px 24px; }
+      h1 { font-size: 3rem; }
+      .section-title { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo-container">
+        <h1>The Question Club</h1>
+        <p class="tagline">One Question. Every Day.</p>
+      </div>
+    </header>
+    
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="answerModeBtn">Answer Question</button>
+      <button class="mode-btn" id="adminModeBtn" style="display: none;">Admin</button>
+    </div>
+    
+    <!-- Answer View (for subscribers) -->
+    <div class="view active" id="answerView">
+      <div class="card">
+        <div id="todayQuestion"></div>
+        
+        <form id="answerForm" style="display: none;">
+          <div class="form-group">
+            <label for="answererName">Your Name</label>
+            <input type="text" id="answererName" placeholder="Your name" required>
+          </div>
+          
+          <div class="form-group">
+            <label for="answerText">Your Answer</label>
+            <textarea id="answerText" placeholder="Share your thoughts..." required></textarea>
+          </div>
+          
+          <div class="checkbox-wrapper">
+            <input type="checkbox" id="shareWithCommunity" checked>
+            <label for="shareWithCommunity">Share my answer with the community</label>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Submit Answer</button>
+        </form>
+        
+        <div id="answersDisplay" style="margin-top: 50px; display: none;">
+          <h3 class="section-title">Community Answers</h3>
+          <div id="answersList"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Admin View -->
+    <div class="view" id="adminView">
+      <div class="card">
+        <h2 class="section-title">Post a Question</h2>
+        
+        <div class="alert alert-info" style="margin-bottom: 24px;">
+          <strong>🔐 Admin Access:</strong> Share this URL to access admin mode:<br>
+          <code style="display: block; margin-top: 8px; padding: 8px; background: white; border-radius: 6px; font-size: 0.85rem; word-break: break-all;" id="adminUrl"></code>
+          <button class="btn btn-secondary" id="copyAdminUrl" style="margin-top: 12px; padding: 10px 20px; font-size: 0.85rem;">Copy Admin URL</button>
+          <button class="btn btn-secondary" id="logoutBtn" style="margin-top: 12px; padding: 10px 20px; font-size: 0.85rem; background: #e0e0e0; color: var(--ink);">Logout</button>
+        </div>
+        
+        <form id="questionForm">
+          <div class="form-group">
+            <label for="newQuestion">Your Question</label>
+            <textarea id="newQuestion" placeholder="What's something that made you smile today?" required></textarea>
+          </div>
+          
+          <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">
+            <input type="date" id="scheduleDate" style="padding: 12px 20px; border: 2px solid #e8e8e8; border-radius: 12px; font-family: 'Epilogue', sans-serif; background: #fafafa;">
+            <input type="time" id="scheduleTime" value="09:00" style="padding: 12px 20px; border: 2px solid #e8e8e8; border-radius: 12px; font-family: 'Epilogue', sans-serif; background: #fafafa;">
+          </div>
+          
+          <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+            <button type="submit" class="btn btn-primary">Post Now</button>
+            <button type="button" class="btn btn-secondary" id="scheduleBtn">Schedule for Later</button>
+          </div>
+        </form>
+        
+        <div class="share-section" style="display: none;" id="shareSection">
+          <h3>Share This Link</h3>
+          <p style="color: var(--muted); margin-bottom: 12px; font-size: 0.95rem;">Send this link to your subscribers so they can answer:</p>
+          <div class="share-link" id="shareLink"></div>
+          <button class="btn btn-secondary" id="copyLinkBtn" style="margin-top: 12px;">Copy Link</button>
+          
+          <div style="margin-top: 20px; padding: 16px; background: rgba(212, 105, 91, 0.1); border-radius: 12px; border: 1px solid var(--accent);">
+            <p style="font-size: 0.85rem; color: var(--ink);"><strong>📝 Important:</strong> Since this is a file-based app, questions are stored in your browser's storage. For subscribers to see questions, you have two options:</p>
+            <ol style="font-size: 0.85rem; color: var(--ink); margin: 8px 0 0 20px; line-height: 1.6;">
+              <li>Share the file with them and they open it locally (each person sees only their own data)</li>
+              <li>Host this file online (e.g., GitHub Pages, Netlify) so everyone accesses the same instance</li>
+            </ol>
+            <p style="font-size: 0.85rem; color: var(--ink); margin-top: 8px;">For the best experience with multiple users, hosting online is recommended!</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <h2 class="section-title">Current Question Stats</h2>
+        
+        <div class="stats">
+          <div class="stat-card">
+            <div class="stat-number" id="totalAnswers">0</div>
+            <div class="stat-label">Answers</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="uniqueRespondents">0</div>
+            <div class="stat-label">Respondents</div>
+          </div>
+        </div>
+        
+        <h3 class="section-title">Scheduled Questions</h3>
+        <div id="scheduledQuestionsList"></div>
+        
+        <h3 class="section-title">All Answers</h3>
+        <div id="adminAnswersList"></div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      
+      // Mode switching
+      const answerModeBtn = document.getElementById('answerModeBtn');
+      const adminModeBtn = document.getElementById('adminModeBtn');
+      const answerView = document.getElementById('answerView');
+      const adminView = document.getElementById('adminView');
+      
+      answerModeBtn.addEventListener('click', () => {
+        answerModeBtn.classList.add('active');
+        adminModeBtn.classList.remove('active');
+        answerView.classList.add('active');
+        adminView.classList.remove('active');
+        loadTodayQuestion();
+      });
+      
+      adminModeBtn.addEventListener('click', () => {
+        adminModeBtn.classList.add('active');
+        answerModeBtn.classList.remove('active');
+        adminView.classList.add('active');
+        answerView.classList.remove('active');
+        loadAdminView();
+      });
+      
+      // Initialize storage
+      if (!localStorage.getItem('currentQuestion')) {
+        localStorage.setItem('currentQuestion', JSON.stringify(null));
+      }
+      if (!localStorage.getItem('answers')) {
+        localStorage.setItem('answers', JSON.stringify([]));
+      }
+      if (!localStorage.getItem('scheduledQuestions')) {
+        localStorage.setItem('scheduledQuestions', JSON.stringify([]));
+      }
+      
+      // Admin authentication
+      const ADMIN_PASSWORD = 'questionclub2025'; // Change this to your preferred password
+      
+      // Check if admin is authenticated
+      const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
+      
+      // Check for admin code in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('admin') === ADMIN_PASSWORD) {
+        sessionStorage.setItem('isAdmin', 'true');
+        // Remove admin code from URL for security
+        window.history.replaceState({}, document.title, window.location.pathname);
+        location.reload();
+      }
+      
+      // Show admin button if authenticated
+      if (isAdmin) {
+        document.getElementById('adminModeBtn').style.display = 'block';
+        document.getElementById('answerModeBtn').classList.remove('active');
+        document.getElementById('adminModeBtn').classList.add('active');
+        document.getElementById('answerView').classList.remove('active');
+        document.getElementById('adminView').classList.add('active');
+        
+        // Set admin URL
+        const adminUrl = window.location.origin + window.location.pathname + '?admin=' + ADMIN_PASSWORD;
+        document.getElementById('adminUrl').textContent = adminUrl;
+        
+        // Copy admin URL button
+        document.getElementById('copyAdminUrl').addEventListener('click', () => {
+          navigator.clipboard.writeText(adminUrl);
+          showAlert('Admin URL copied!', 'success');
+        });
+        
+        // Logout button
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+          if (confirm('Are you sure you want to logout from admin mode?')) {
+            sessionStorage.removeItem('isAdmin');
+            location.reload();
+          }
+        });
+      }
+      
+      // Post a new question
+      document.getElementById('questionForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const questionText = document.getElementById('newQuestion').value;
+        
+        const question = {
+          id: Date.now(),
+          text: questionText,
+          postedDate: new Date().toISOString()
+        };
+        
+        localStorage.setItem('currentQuestion', JSON.stringify(question));
+        localStorage.setItem('answers', JSON.stringify([])); // Clear previous answers
+        
+        document.getElementById('newQuestion').value = '';
+        
+        // Show share section
+        const shareSection = document.getElementById('shareSection');
+        shareSection.style.display = 'block';
+        const shareLink = window.location.origin + window.location.pathname;
+        document.getElementById('shareLink').textContent = shareLink;
+        
+        showAlert('Question posted! Share the link with your subscribers.', 'success');
+        loadAdminView();
+      });
+      
+      // Copy link
+      document.getElementById('copyLinkBtn').addEventListener('click', () => {
+        const link = document.getElementById('shareLink').textContent;
+        navigator.clipboard.writeText(link);
+        showAlert('Link copied to clipboard!', 'success');
+      });
+      
+      // Schedule question button
+      document.getElementById('scheduleBtn').addEventListener('click', () => {
+        const questionText = document.getElementById('newQuestion').value;
+        const scheduleDate = document.getElementById('scheduleDate').value;
+        const scheduleTime = document.getElementById('scheduleTime').value;
+        
+        if (!questionText.trim()) {
+          alert('Please enter a question first!');
+          return;
+        }
+        
+        if (!scheduleDate) {
+          alert('Please select a date!');
+          return;
+        }
+        
+        const scheduledQuestions = JSON.parse(localStorage.getItem('scheduledQuestions') || '[]');
+        scheduledQuestions.push({
+          id: Date.now(),
+          text: questionText,
+          scheduledFor: scheduleDate + ' ' + scheduleTime,
+          status: 'scheduled'
+        });
+        
+        localStorage.setItem('scheduledQuestions', JSON.stringify(scheduledQuestions));
+        
+        document.getElementById('newQuestion').value = '';
+        document.getElementById('scheduleDate').value = '';
+        
+        showAlert('Question scheduled successfully!', 'success');
+        loadAdminView();
+      });
+      
+      // Check for scheduled questions that should be posted
+      function checkScheduledQuestions() {
+        const scheduledQuestions = JSON.parse(localStorage.getItem('scheduledQuestions') || '[]');
+        const now = new Date();
+        
+        scheduledQuestions.forEach(sq => {
+          const scheduledTime = new Date(sq.scheduledFor);
+          
+          if (now >= scheduledTime && sq.status === 'scheduled') {
+            const question = {
+              id: Date.now(),
+              text: sq.text,
+              postedDate: new Date().toISOString()
+            };
+            
+            localStorage.setItem('currentQuestion', JSON.stringify(question));
+            localStorage.setItem('answers', JSON.stringify([]));
+            
+            sq.status = 'posted';
+          }
+        });
+        
+        const activeScheduled = scheduledQuestions.filter(sq => sq.status === 'scheduled');
+        localStorage.setItem('scheduledQuestions', JSON.stringify(activeScheduled));
+      }
+      
+      // Load scheduled questions list
+      function loadScheduledQuestions() {
+        const scheduledQuestions = JSON.parse(localStorage.getItem('scheduledQuestions') || '[]');
+        const container = document.getElementById('scheduledQuestionsList');
+        
+        if (scheduledQuestions.length === 0) {
+          container.innerHTML = '<div class="empty-state" style="padding: 40px 20px;"><div class="empty-state-icon">📅</div><p style="font-size: 0.95rem;">No scheduled questions. Use the form above to schedule one!</p></div>';
+          return;
+        }
+        
+        scheduledQuestions.sort((a, b) => new Date(a.scheduledFor) - new Date(b.scheduledFor));
+        
+        container.innerHTML = scheduledQuestions.map(sq => {
+          const scheduledDate = new Date(sq.scheduledFor);
+          const dateStr = scheduledDate.toLocaleDateString('en-US', {
+            weekday: 'short',
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+          });
+          const timeStr = scheduledDate.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit'
+          });
+          
+          return `
+            <div class="answer-item" style="margin-bottom: 16px;">
+              <div class="answer-text" style="font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 12px;">${sq.text}</div>
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <div class="answer-time">📅 ${dateStr} at ${timeStr}</div>
+                <button onclick="deleteScheduled(${sq.id})" class="btn btn-small" style="padding: 8px 16px; font-size: 0.8rem; background: #e0e0e0; color: var(--ink); box-shadow: none;">Delete</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+      
+      // Delete scheduled question
+      window.deleteScheduled = function(id) {
+        if (!confirm('Delete this scheduled question?')) return;
+        
+        let scheduledQuestions = JSON.parse(localStorage.getItem('scheduledQuestions') || '[]');
+        scheduledQuestions = scheduledQuestions.filter(sq => sq.id !== id);
+        localStorage.setItem('scheduledQuestions', JSON.stringify(scheduledQuestions));
+        
+        loadAdminView();
+      };
+      
+      // Submit answer
+      document.getElementById('answerForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const currentQuestion = JSON.parse(localStorage.getItem('currentQuestion'));
+        if (!currentQuestion) return;
+        
+        const name = document.getElementById('answererName').value;
+        const shareWithCommunity = document.getElementById("shareWithCommunity").checked;
+        const answerText = document.getElementById('answerText').value;
+        
+        const answers = JSON.parse(localStorage.getItem('answers') || '[]');
+        answers.push({
+          id: Date.now(),
+          questionId: currentQuestion.id,
+          name,
+          sharedWithCommunity: shareWithCommunity,
+          answer: answerText,
+          timestamp: new Date().toISOString()
+        });
+        
+        localStorage.setItem('answers', JSON.stringify(answers));
+        
+        document.getElementById('answerForm').reset();
+        showAlert('Answer submitted! Thank you for sharing.', 'success');
+        loadTodayQuestion();
+      });
+      
+      // Load today's question for answering
+      function loadTodayQuestion() {
+        const currentQuestion = JSON.parse(localStorage.getItem('currentQuestion'));
+        const container = document.getElementById('todayQuestion');
+        const form = document.getElementById('answerForm');
+        const answersDisplay = document.getElementById('answersDisplay');
+        
+        if (!currentQuestion) {
+          container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">💭</div><p>No question has been posted yet.</p><p style="font-size: 0.9rem; margin-top: 12px; color: var(--muted);">The admin needs to post a question first, or you may need to open this link in the same browser where the question was posted.</p></div>';
+          form.style.display = 'none';
+          answersDisplay.style.display = 'none';
+          return;
+        }
+        
+        const date = new Date(currentQuestion.postedDate);
+        const formattedDate = date.toLocaleDateString('en-US', { 
+          weekday: 'long', 
+          month: 'long', 
+          day: 'numeric',
+          year: 'numeric'
+        });
+        
+        container.innerHTML = `
+          <div class="question-display">
+            <div class="question-text">${currentQuestion.text}</div>
+            <div class="question-date">${formattedDate}</div>
+          </div>
+        `;
+        
+        form.style.display = 'block';
+        
+        // Show community answers
+        const answers = JSON.parse(localStorage.getItem('answers') || '[]');
+        const questionAnswers = answers.filter(a => a.questionId === currentQuestion.id);
+        
+        if (questionAnswers.length > 0) {
+          answersDisplay.style.display = 'block';
+          const answersList = document.getElementById("answersList");
+          const sharedAnswers = questionAnswers.filter(a => a.sharedWithCommunity);
+          
+          let answersHTML = '';
+          for (const a of sharedAnswers) {
+            const time = new Date(a.timestamp);
+            const timeStr = time.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+            answersHTML += `
+              <div class="answer-item">
+                <div class="answer-author">Anonymous <span class="anonymous-badge">Community</span></div>
+                <div class="answer-text">${a.answer}</div>
+                <div class="answer-time">${timeStr}</div>
+              </div>
+            `;
+          }
+          answersList.innerHTML = answersHTML;
+        }
+      }
+      
+      // Load admin view
+      function loadAdminView() {
+        const currentQuestion = JSON.parse(localStorage.getItem('currentQuestion'));
+        const answers = JSON.parse(localStorage.getItem('answers') || '[]');
+        
+        if (currentQuestion) {
+          const questionAnswers = answers.filter(a => a.questionId === currentQuestion.id);
+          const uniqueNames = new Set(questionAnswers.map(a => a.name));
+          
+          document.getElementById('totalAnswers').textContent = questionAnswers.length;
+          document.getElementById('uniqueRespondents').textContent = uniqueNames.size;
+          
+          const adminList = document.getElementById('adminAnswersList');
+          if (questionAnswers.length === 0) {
+            adminList.innerHTML = '<div class="empty-state"><div class="empty-state-icon">💬</div><p>No answers yet. Share the link with your subscribers!</p></div>';
+          } else {
+            adminList.innerHTML = questionAnswers.map(a => {
+              const time = new Date(a.timestamp);
+              const timeStr = time.toLocaleString('en-US', { 
+                month: 'short', 
+                day: 'numeric',
+                hour: 'numeric', 
+                minute: '2-digit' 
+              });
+              return `
+                <div class="answer-item">
+                  <div class="answer-author">${a.name}</div>
+                  <div class="answer-text">${a.answer}</div>
+                  <div class="answer-time">${timeStr}</div>
+                </div>
+              `;
+            }).join('');
+          }
+          
+          document.getElementById('shareSection').style.display = 'block';
+          document.getElementById('shareLink').textContent = window.location.origin + window.location.pathname;
+          loadScheduledQuestions();
+        } else {
+          document.getElementById('totalAnswers').textContent = '0';
+          document.getElementById('uniqueRespondents').textContent = '0';
+          document.getElementById('adminAnswersList').innerHTML = '<div class="empty-state"><div class="empty-state-icon">💬</div><p>Post a question to see answers here.</p></div>';
+          loadScheduledQuestions();
+        }
+      }
+      
+      function showAlert(message, type) {
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-' + type;
+        alert.textContent = message;
+        const container = document.querySelector('.view.active .card');
+        container.insertBefore(alert, container.firstChild);
+        setTimeout(() => {
+          alert.style.opacity = '0';
+          setTimeout(() => alert.remove(), 300);
+        }, 3000);
+      }
+      
+      // Set default date to tomorrow
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      document.getElementById('scheduleDate').value = tomorrow.toISOString().split('T')[0];
+      
+      // Check for scheduled questions every minute
+      checkScheduledQuestions();
+      setInterval(checkScheduledQuestions, 60000);
+      
+      // Initialize - load appropriate view
+      if (isAdmin) {
+        loadAdminView();
+      } else {
+        loadTodayQuestion();
+      }
+    });
+    
+    // Service Worker registration for PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {
+        // Service worker not available, that's okay
+      });
+    }
+  </script>
+</body>
+</html>
